@@ -131,7 +131,7 @@ This project is open-source and available under the **MIT License**.
 ## 👨‍💻 Author
 
 **Ashish Jadhav**
-Aspiring AI / Full Stack Developer
+Aspiring AI / ML Engineer
 
 ---
 

@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 from langchain_core.prompts import PromptTemplate
 from langchain_groq import ChatGroq
 from dotenv import load_dotenv
@@ -16,13 +17,12 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────
-#  Global CSS Injection
+#  Global CSS
 # ─────────────────────────────────────────────
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap');
 
-/* ── Root tokens ── */
 :root {
     --cream:   #FAF7F2;
     --charcoal:#1C1917;
@@ -36,14 +36,12 @@ st.markdown("""
     --shadow:  0 4px 24px rgba(28,25,23,.08);
 }
 
-/* ── Reset & base ── */
 html, body, [class*="css"] {
     font-family: 'DM Sans', sans-serif;
     background-color: var(--cream) !important;
     color: var(--charcoal);
 }
 
-/* ── Hide Streamlit chrome ── */
 #MainMenu, footer, header { visibility: hidden; }
 
 /* ── Sidebar ── */
@@ -52,8 +50,6 @@ html, body, [class*="css"] {
     border-right: none;
 }
 [data-testid="stSidebar"] * { color: var(--cream) !important; }
-[data-testid="stSidebar"] .stSelectbox label,
-[data-testid="stSidebar"] .stRadio label { color: #D6C9B6 !important; font-size: 0.78rem; letter-spacing: .08em; text-transform: uppercase; }
 [data-testid="stSidebar"] .stSelectbox > div > div,
 [data-testid="stSidebar"] select {
     background: #2C2825 !important;
@@ -73,8 +69,15 @@ html, body, [class*="css"] {
     background: var(--amber) !important;
     border-color: var(--amber) !important;
 }
+[data-testid="stSidebarCollapseButton"] button {
+    background: transparent !important;
+    border: 1px solid #3D3733 !important;
+    border-radius: 8px !important;
+    color: #9C8E80 !important;
+}
+[data-testid="stSidebarCollapseButton"] button:hover { background: #2C2825 !important; }
 
-/* ── Generate button ── */
+/* Generate button */
 [data-testid="stSidebar"] .stButton > button {
     width: 100%;
     background: linear-gradient(135deg, var(--amber), var(--rust));
@@ -93,167 +96,140 @@ html, body, [class*="css"] {
 [data-testid="stSidebar"] .stButton > button:hover { opacity: .88; transform: translateY(-1px); }
 [data-testid="stSidebar"] .stButton > button:active { transform: translateY(0); }
 
-/* ── Main content area ── */
+/* Main content */
 .block-container { padding: 2.5rem 3rem 4rem !important; max-width: 860px; }
 
-/* ── Hero header ── */
-.hero-header {
-    text-align: center;
-    padding: 48px 0 36px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 40px;
-}
-.hero-header .eyebrow {
-    font-size: .72rem;
-    font-weight: 500;
-    letter-spacing: .18em;
-    text-transform: uppercase;
-    color: var(--amber);
-    margin-bottom: 12px;
-}
-.hero-header h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(2rem, 5vw, 3.2rem);
-    font-weight: 700;
-    color:var(--amber);
-    line-height: 1.15;
-    margin: 0 0 10px;
-}
-.hero-header .sub {
-    font-size: .95rem;
-    color: var(--sage);
-    font-weight: 300;
-}
+/* Hero */
+.hero-header { text-align: center; padding: 48px 0 36px; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
+.hero-header .eyebrow { font-size: .72rem; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: var(--amber); margin-bottom: 12px; }
+.hero-header h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 700; color: var(--charcoal); line-height: 1.15; margin: 0 0 10px; }
+.hero-header .sub { font-size: .95rem; color: var(--sage); font-weight: 300; }
 
-/* ── Result card ── */
-.result-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 36px 40px;
-    margin-bottom: 28px;
-    box-shadow: var(--shadow);
-    position: relative;
-    overflow: hidden;
-}
-.result-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--amber), var(--rust));
-}
-
-/* ── Section label ── */
-.section-label {
-    font-size: .7rem;
-    font-weight: 500;
-    letter-spacing: .16em;
-    text-transform: uppercase;
-    color: var(--amber);
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.section-label::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-}
-
-/* ── Restaurant name ── */
-.restaurant-name {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 700;
-    color: var(--charcoal);
-    line-height: 1.1;
-    margin: 0 0 6px;
-}
-.restaurant-meta {
-    font-size: .84rem;
-    color: var(--sage);
-    font-weight: 300;
-}
-
-/* ── Tagline ── */
-.tagline-text {
-    font-family: 'Playfair Display', serif;
-    font-style: italic;
-    font-size: 1.35rem;
-    color: var(--rust);
-    line-height: 1.45;
-}
-
-/* ── Menu items grid ── */
-.menu-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 4px;
-}
-.menu-item {
-    background: var(--cream);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 18px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: .92rem;
-    font-weight: 400;
-    color: var(--charcoal);
-    transition: border-color .2s, box-shadow .2s;
-}
+/* Cards */
+.result-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 36px 40px; margin-bottom: 28px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+.result-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--amber), var(--rust)); }
+.section-label { font-size: .7rem; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--amber); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.restaurant-name { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; color: var(--charcoal); line-height: 1.1; margin: 0 0 6px; }
+.tagline-text { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.35rem; color: var(--rust); line-height: 1.45; }
+.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px; }
+.menu-item { background: var(--cream); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; font-size: .92rem; color: var(--rust) !important; font-weight: 500; }
 .menu-item:hover { border-color: var(--amber); box-shadow: 0 2px 12px rgba(217,119,6,.1); }
-.menu-item .num {
-    background: linear-gradient(135deg, var(--amber), var(--rust));
-    color: #fff;
-    font-size: .7rem;
-    font-weight: 600;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-/* ── Cuisine badge ── */
-.badge {
-    display: inline-block;
-    background: var(--amber-lt);
-    color: var(--rust);
-    border-radius: 20px;
-    padding: 4px 14px;
-    font-size: .75rem;
-    font-weight: 500;
-    letter-spacing: .05em;
-    margin-top: 2px;
-}
-
-/* ── Empty state ── */
-.empty-state {
-    text-align: center;
-    padding: 80px 40px;
-    color: var(--sage);
-}
+.menu-item .num { background: linear-gradient(135deg, var(--amber), var(--rust)); color: #fff; font-size: .7rem; font-weight: 600; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.badge { display: inline-block; background: var(--amber-lt); color: var(--rust); border-radius: 20px; padding: 4px 14px; font-size: .75rem; font-weight: 500; margin-top: 2px; }
+.empty-state { text-align: center; padding: 80px 40px; color: var(--sage); }
 .empty-state .big-icon { font-size: 4rem; margin-bottom: 16px; }
-.empty-state h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.5rem;
-    color: var(--charcoal);
-    margin-bottom: 8px;
-}
+.empty-state h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--charcoal); margin-bottom: 8px; }
 .empty-state p { font-size: .9rem; font-weight: 300; }
-
-/* ── Spinner override ── */
 .stSpinner > div { border-color: var(--amber) transparent transparent transparent !important; }
 </style>
 """, unsafe_allow_html=True)
+
+# ─────────────────────────────────────────────
+#  Sidebar Reopen Button via components.html
+#  This runs in its OWN iframe, so window.parent
+#  gives us direct access to the top document —
+#  bypassing the st.markdown sandbox restriction.
+# ─────────────────────────────────────────────
+components.html("""
+<script>
+(function () {
+    var topDoc = window.parent.document;
+
+    /* --- inject the floating button into the TOP page --- */
+    function injectBtn() {
+        if (topDoc.getElementById('_rst_open_btn')) return;
+        var btn = topDoc.createElement('button');
+        btn.id = '_rst_open_btn';
+        btn.title = 'Open sidebar';
+        btn.textContent = '\u2630';          /* ☰ */
+        var s = btn.style;
+        s.cssText = [
+            'position:fixed', 'top:50vh', 'left:0',
+            'transform:translateY(-50%)',
+            'z-index:2147483647',
+            'background:linear-gradient(160deg,#D97706,#B45309)',
+            'color:#fff', 'border:none',
+            'border-radius:0 14px 14px 0',
+            'width:38px', 'min-height:72px',
+            'font-size:1.4rem', 'line-height:1',
+            'cursor:pointer', 'display:none',
+            'align-items:center', 'justify-content:center',
+            'box-shadow:4px 0 20px rgba(217,119,6,.55)',
+            'transition:width .2s,box-shadow .2s',
+            'padding:0'
+        ].join(';');
+
+        btn.addEventListener('mouseenter', function () {
+            btn.style.width = '50px';
+            btn.style.boxShadow = '6px 0 28px rgba(217,119,6,.75)';
+        });
+        btn.addEventListener('mouseleave', function () {
+            btn.style.width = '38px';
+            btn.style.boxShadow = '4px 0 20px rgba(217,119,6,.55)';
+        });
+        btn.addEventListener('click', function () {
+            clickSidebarToggle();
+            setTimeout(syncBtn, 400);
+        });
+        topDoc.body.appendChild(btn);
+    }
+
+    /* --- find and click whatever Streamlit uses to open sidebar --- */
+    function clickSidebarToggle() {
+        var tries = [
+            '[data-testid="collapsedControl"]',
+            '[data-testid="stSidebarCollapsedControl"]',
+            'button[aria-label="Open sidebar"]',
+            'button[aria-label="open sidebar"]',
+            'button[aria-label="Show sidebar"]',
+            'section[data-testid="stSidebar"] ~ div button',
+        ];
+        for (var i = 0; i < tries.length; i++) {
+            var el = topDoc.querySelector(tries[i]);
+            if (el) { el.click(); return; }
+        }
+    }
+
+    /* --- show button only when sidebar is collapsed (<40px wide) --- */
+    function isSidebarHidden() {
+        var sb = topDoc.querySelector('[data-testid="stSidebar"]');
+        if (!sb) return false;
+        return sb.getBoundingClientRect().width < 40;
+    }
+
+    function syncBtn() {
+        var btn = topDoc.getElementById('_rst_open_btn');
+        if (!btn) return;
+        btn.style.display = isSidebarHidden() ? 'flex' : 'none';
+    }
+
+    /* --- bootstrap --- */
+    function boot() {
+        injectBtn();
+        syncBtn();
+
+        /* Watch sidebar resize */
+        var sb = topDoc.querySelector('[data-testid="stSidebar"]');
+        if (sb && window.ResizeObserver) {
+            new ResizeObserver(syncBtn).observe(sb);
+        }
+
+        /* Fallback polling every 600 ms */
+        setInterval(syncBtn, 600);
+    }
+
+    /* Wait until stSidebar exists in the top doc */
+    var poll = setInterval(function () {
+        if (topDoc.querySelector('[data-testid="stSidebar"]')) {
+            clearInterval(poll);
+            boot();
+        }
+    }, 250);
+})();
+</script>
+""", height=0)
+
 
 # ─────────────────────────────────────────────
 #  Hero Header
@@ -295,7 +271,7 @@ with st.sidebar:
         ["Veg 🥦", "Non-Veg 🍗", "Both 🍱"],
         label_visibility="collapsed"
     )
-    food_type_clean = food_type.split(" ")[0]  # strip emoji for prompt
+    food_type_clean = food_type.split(" ")[0]
 
     st.markdown("<div style='height:24px'></div>", unsafe_allow_html=True)
     generate = st.button("✨ Generate Brand Identity", use_container_width=True)
@@ -345,7 +321,6 @@ if generate:
         food_items_raw  = (prompt2 | llm).invoke({"restaurant_name": restaurant_name, "food_type": food_type_clean}).content
         tagline         = (prompt3 | llm).invoke({"restaurant_name": restaurant_name}).content.strip().replace('"','')
 
-    # Parse food items
     items = []
     for line in food_items_raw.split("\n"):
         line = line.strip()
@@ -357,7 +332,6 @@ if generate:
             items.append(line)
     items = items[:5]
 
-    # ── Restaurant Name Card ──
     st.markdown(f"""
     <div class="result-card">
         <div class="section-label">🏷️ Restaurant Name</div>
@@ -369,7 +343,6 @@ if generate:
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Tagline Card ──
     st.markdown(f"""
     <div class="result-card">
         <div class="section-label">✨ Brand Tagline</div>
@@ -377,7 +350,6 @@ if generate:
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Menu Items Card ──
     items_html = "".join([
         f'<div class="menu-item"><span class="num">{i+1}</span>{item}</div>'
         for i, item in enumerate(items)
@@ -385,14 +357,11 @@ if generate:
     st.markdown(f"""
     <div class="result-card">
         <div class="section-label">🍛 Signature Menu Items</div>
-        <div class="menu-grid">
-            {items_html}
-        </div>
+        <div class="menu-grid">{items_html}</div>
     </div>
     """, unsafe_allow_html=True)
 
 else:
-    # Empty state
     st.markdown("""
     <div class="empty-state">
         <div class="big-icon">🍴</div>
